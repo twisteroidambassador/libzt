@@ -479,7 +479,7 @@ PyObject* zts_py_select(PyObject* module, PyObject* rlist, PyObject* wlist, PyOb
                 n = 0;
                 break;
             }
-            _PyTime_AsTimeval_noraise(timeout, &tv, _PyTime_ROUND_CEILING);
+            _PyTime_AsTimeval_clamp(timeout, &tv, _PyTime_ROUND_CEILING);
             /* retry select() with the recomputed timeout */
         }
     } while (1);

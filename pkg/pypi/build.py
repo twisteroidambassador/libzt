@@ -27,6 +27,8 @@ INCLUDE_DIRS = [
     os.path.join(ROOT_DIR, "ext/ZeroTierOne/include"),
     os.path.join(ROOT_DIR, "ext/ZeroTierOne"),
     os.path.join(ROOT_DIR, "ext/ZeroTierOne/ext"),
+    os.path.join(ROOT_DIR, "ext/ZeroTierOne/ext/prometheus-cpp-lite-1.0/simpleapi/include"),
+    os.path.join(ROOT_DIR, "ext/ZeroTierOne/ext/prometheus-cpp-lite-1.0/core/include"),
     os.path.join(ROOT_DIR, "ext/ZeroTierOne/node"),
     os.path.join(ROOT_DIR, "ext/ZeroTierOne/service"),
     os.path.join(ROOT_DIR, "ext/ZeroTierOne/osdep"),
