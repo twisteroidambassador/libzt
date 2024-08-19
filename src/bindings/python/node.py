@@ -11,23 +11,9 @@ class _EventCallbackClass(libzt.PythonDirectorCallbackClass):
 
 class MyEventCallbackClass(_EventCallbackClass):
     def on_zerotier_event(self, msg):
-        id = 0
-        if msg.event_code == libzt.ZTS_EVENT_NODE_ONLINE:
-            id = msg.node.node_id
-        if msg.event_code == libzt.ZTS_EVENT_NODE_OFFLINE:
-            id = msg.node.node_id
-        if msg.event_code == libzt.ZTS_EVENT_NETWORK_READY_IP4:
-            id = msg.network.net_id
-        if msg.event_code == libzt.ZTS_EVENT_NETWORK_READY_IP6:
-            id = msg.network.net_id
-        if msg.event_code == libzt.ZTS_EVENT_PEER_DIRECT:
-            id = msg.peer.peer_id
-        if msg.event_code == libzt.ZTS_EVENT_PEER_RELAY:
-            id = msg.peer.peer_id
-        # Now that we've adjusted internal state, notify user
         global _user_specified_event_handler
         if _user_specified_event_handler is not None:
-            _user_specified_event_handler(msg.event_code, id)
+            _user_specified_event_handler(msg)
 
 
 class ZeroTierNode:
