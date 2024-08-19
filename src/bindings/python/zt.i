@@ -37,3 +37,6 @@
 
 %include "ZeroTierSockets.h"
 %include "PythonSockets.h"
+
+%include "carrays.i"
+%array_functions(zts_ip_addr, zts_ip_addr_array);

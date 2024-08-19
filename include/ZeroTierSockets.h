@@ -348,6 +348,12 @@ typedef enum {
 
 #define ZTS_MAX_ENDPOINT_STR_LEN ZTS_INET6_ADDRSTRLEN + 6
 
+/**
+ * Maximum number of DNS servers per domain
+ * Must be kept in sync with ZT_MAX_DNS_SERVER
+ */
+#define ZTS_MAX_DNS_SERVERS 4
+
 //----------------------------------------------------------------------------//
 // Misc                                                                       //
 //----------------------------------------------------------------------------//
@@ -554,6 +560,62 @@ struct zts_sockaddr_storage {
     uint32_t s2_data2[3];
     uint32_t s2_data3[3];
 };
+
+//----------------------------------------------------------------------------//
+// DNS                                                                        //
+//----------------------------------------------------------------------------//
+
+struct zts_hostent {
+    char* h_name;             /* Official name of the host. */
+    char** h_aliases;         /* A pointer to an array of pointers to alternative host
+                                 names,   terminated by a null pointer. */
+    int h_addrtype;           /* Address type. */
+    int h_length;             /* The length, in bytes, of the address. */
+    char** h_addr_list;       /* A pointer to an array of pointers to network
+                                 addresses (in network byte order) for the host,
+                                 terminated by a null pointer. */
+#define h_addr h_addr_list[0] /* for backward compatibility */
+};
+
+/**
+ * @brief Resolve a host-name
+ *
+ * @param name A null-terminated string representing the name of the host
+ * @return Pointer to struct zts_hostent if successful, NULL otherwise
+ */
+struct zts_hostent* zts_bsd_gethostbyname(const char* name);
+
+struct zts_ip4_addr {
+    uint32_t addr;
+};
+
+#define LWIP_IPV6_SCOPES 1
+
+/** This is the aligned version of ip6_addr_t,
+    used as local variable, on the stack, etc. */
+struct zts_ip6_addr {
+    uint32_t addr[4];
+#if LWIP_IPV6_SCOPES
+    uint8_t zone;
+#endif /* LWIP_IPV6_SCOPES */
+};
+
+/* from lwip_ip_addr_type */
+#define ZTS_IPADDR_TYPE_V4 0U
+#define ZTS_IPADDR_TYPE_V6 6U
+#define ZTS_IPADDR_TYPE_ANY 46U
+
+/**
+ * A union struct for both IP version's addresses.
+ * ATTENTION: watch out for its size when adding IPv6 address scope!
+ */
+typedef struct zts_ip_addr {
+    union {
+        struct zts_ip6_addr ip6;
+        struct zts_ip4_addr ip4;
+    } u_addr;
+    uint8_t type;   // ZTS_IPADDR_TYPE_V4, ZTS_IPADDR_TYPE_V6
+} zts_ip_addr;
 
 //----------------------------------------------------------------------------//
 // Callback Structures                                                        //
@@ -826,6 +888,16 @@ typedef struct {
         uint32_t adi; /* Additional distinguishing information, usually zero
                          except for IPv4 ARP groups */
     } multicast_subs[ZTS_MAX_MULTICAST_SUBSCRIPTIONS];
+
+    /**
+     * DNS search domain
+     */
+    char dns_domain[128];
+
+    /**
+     * DNS server addresses
+     */
+    zts_ip_addr dns_addresses[ZTS_MAX_DNS_SERVERS];
 } zts_net_info_t;
 
 /**
@@ -2861,55 +2933,6 @@ ZTS_API int ZTCALL zts_set_keepalive(int fd, int enabled);
  *     experiences a problem, `ZTS_ERR_ARG` if invalid argument. Sets `zts_errno`
  */
 ZTS_API int ZTCALL zts_get_keepalive(int fd);
-
-//----------------------------------------------------------------------------//
-// DNS                                                                        //
-//----------------------------------------------------------------------------//
-
-struct zts_hostent {
-    char* h_name;             /* Official name of the host. */
-    char** h_aliases;         /* A pointer to an array of pointers to alternative host
-                                 names,   terminated by a null pointer. */
-    int h_addrtype;           /* Address type. */
-    int h_length;             /* The length, in bytes, of the address. */
-    char** h_addr_list;       /* A pointer to an array of pointers to network
-                                 addresses (in network byte order) for the host,
-                                 terminated by a null pointer. */
-#define h_addr h_addr_list[0] /* for backward compatibility */
-};
-
-/**
- * @brief Resolve a host-name
- *
- * @param name A null-terminated string representing the name of the host
- * @return Pointer to struct zts_hostent if successful, NULL otherwise
- */
-struct zts_hostent* zts_bsd_gethostbyname(const char* name);
-
-struct zts_ip4_addr {
-    uint32_t addr;
-};
-
-/** This is the aligned version of ip6_addr_t,
-    used as local variable, on the stack, etc. */
-struct zts_ip6_addr {
-    uint32_t addr[4];
-#if LWIP_IPV6_SCOPES
-    uint8_t zone;
-#endif /* LWIP_IPV6_SCOPES */
-};
-
-/**
- * A union struct for both IP version's addresses.
- * ATTENTION: watch out for its size when adding IPv6 address scope!
- */
-typedef struct zts_ip_addr {
-    union {
-        struct zts_ip6_addr ip6;
-        struct zts_ip4_addr ip4;
-    } u_addr;
-    uint8_t type;   // ZTS_IPADDR_TYPE_V4, ZTS_IPADDR_TYPE_V6
-} zts_ip_addr;
 
 /**
  * Initialize one of the DNS servers.
