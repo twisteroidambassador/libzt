@@ -121,6 +121,9 @@ PyObject* zts_py_sockaddr_to_tuple(struct zts_sockaddr* addr) {
             lwip_ntohl(addr_in6->sin6_flowinfo), addr_in6->sin6_scope_id);
         return t;
     }
+    if (addr->sa_family == 0) {
+        Py_RETURN_NONE;
+    }
     PyErr_SetString(PyExc_TypeError, "unknown address family");
     return NULL;
 }

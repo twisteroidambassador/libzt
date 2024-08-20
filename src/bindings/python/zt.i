@@ -40,3 +40,25 @@
 
 %include "carrays.i"
 %array_functions(zts_ip_addr, zts_ip_addr_array);
+
+%extend zts_net_info_t {
+    PyObject* get_all_routes() {
+        PyObject* routes_list = PyList_New($self->route_count);
+        if (routes_list == NULL) {
+            /* Do I need to set an exception here? */
+            return NULL;
+        }
+        for (unsigned int i = 0; i < $self->route_count; i++) {
+            PyObject* t = Py_BuildValue(
+                "(NNHH)", zts_py_sockaddr_to_tuple((struct zts_sockaddr*) &($self->routes[i].target)),
+                zts_py_sockaddr_to_tuple((struct zts_sockaddr*) &($self->routes[i].via)),
+                $self->routes[i].flags, $self->routes[i].metric);
+            if (t == NULL) {
+                Py_DECREF(routes_list);
+                return NULL;
+            }
+            PyList_SET_ITEM(routes_list, i, t);
+        }
+        return routes_list;
+    }
+}
