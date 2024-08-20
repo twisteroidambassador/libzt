@@ -315,7 +315,7 @@ class socket:
         Wait for incoming connection and return a tuple of socket object and
         client address info.  This address info may be a tuple of host address
         and port."""
-        new_conn_fd, addr, port = libzt.zts_py_accept(self._fd)
+        new_conn_fd, addr = libzt.zts_py_accept(self._fd)
         if new_conn_fd < 0:
             handle_error(new_conn_fd)
             return None
