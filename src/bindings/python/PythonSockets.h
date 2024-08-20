@@ -19,6 +19,8 @@
 
 typedef int SOCKET_T;
 
+PyObject* zts_py_sockaddr_to_tuple(struct zts_sockaddr* addr);
+
 int zts_py_bind(int fd, int family, int type, PyObject* addro);
 
 int zts_py_connect(int fd, int family, int type, PyObject* addro);

@@ -104,35 +104,37 @@ static int zts_py_tuple_to_sockaddr(int family, PyObject* addr_obj, struct zts_s
     return ZTS_ERR_ARG;
 }
 
+PyObject* zts_py_sockaddr_to_tuple(struct zts_sockaddr* addr) {
+    if (addr->sa_family == ZTS_AF_INET) {
+        struct zts_sockaddr_in* addr_in = (zts_sockaddr_in*) addr;
+        char ipstr[ZTS_INET_ADDRSTRLEN] = { 0 };
+        zts_inet_ntop(ZTS_AF_INET, &(addr_in->sin_addr), ipstr, ZTS_INET_ADDRSTRLEN);
+        PyObject* t = Py_BuildValue("(sl)", ipstr, lwip_ntohs(addr_in->sin_port));
+        return t;
+    }
+    if (addr->sa_family == ZTS_AF_INET6) {
+        struct zts_sockaddr_in6* addr_in6 = (zts_sockaddr_in6*) addr;
+        char ipstr[ZTS_INET6_ADDRSTRLEN] = { 0 };
+        zts_inet_ntop(ZTS_AF_INET6, &(addr_in6->sin6_addr), ipstr, ZTS_INET6_ADDRSTRLEN);
+        PyObject* t = Py_BuildValue(
+            "(slII)", ipstr, lwip_ntohs(addr_in6->sin6_port),
+            lwip_ntohl(addr_in6->sin6_flowinfo), addr_in6->sin6_scope_id);
+        return t;
+    }
+    PyErr_SetString(PyExc_TypeError, "unknown address family");
+    return NULL;
+}
+
 PyObject* zts_py_accept(int fd)
 {
-    // TODO: allow IPv6
     struct zts_sockaddr_storage addrbuf = { 0 };
     socklen_t addrlen = sizeof(addrbuf);
     int err = ZTS_ERR_OK;
     Py_BEGIN_ALLOW_THREADS;
     err = zts_bsd_accept(fd, (struct zts_sockaddr*)&addrbuf, &addrlen);
     Py_END_ALLOW_THREADS;
-    if (addrbuf.ss_family == ZTS_AF_INET) {
-        struct zts_sockaddr_in* addr_in = (zts_sockaddr_in *) (&addrbuf);
-        char ipstr[ZTS_INET_ADDRSTRLEN] = { 0 };
-        zts_inet_ntop(ZTS_AF_INET, &(addr_in->sin_addr), ipstr, ZTS_INET_ADDRSTRLEN);
-        PyObject* t;
-        t = Py_BuildValue("(l(sl))", err, ipstr, lwip_ntohs(addr_in->sin_port));
-        return t;
-    }
-    if (addrbuf.ss_family == ZTS_AF_INET6) {
-        struct zts_sockaddr_in6* addr_in6 = (zts_sockaddr_in6*) (&addrbuf);
-        char ipstr[ZTS_INET6_ADDRSTRLEN] = { 0 };
-        zts_inet_ntop(ZTS_AF_INET6, &(addr_in6->sin6_addr), ipstr, ZTS_INET6_ADDRSTRLEN);
-        PyObject* t;
-        t = Py_BuildValue(
-            "(l(slII))", err, ipstr, lwip_ntohs(addr_in6->sin6_port),
-            lwip_ntohl(addr_in6->sin6_flowinfo), addr_in6->sin6_scope_id);
-        return t;
-    }
-    PyErr_SetString(PyExc_TypeError, "unknown address family");
-    return NULL;
+    PyObject* t = Py_BuildValue("(lN)", err, zts_py_sockaddr_to_tuple((struct zts_sockaddr*)&addrbuf));
+    return t;
 }
 
 int zts_py_bind(int fd, int family, int type, PyObject* addr_obj)
