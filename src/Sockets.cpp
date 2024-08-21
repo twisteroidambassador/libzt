@@ -336,6 +336,11 @@ char* zts_ipaddr_ntoa(const zts_ip_addr* addr)
     return ipaddr_ntoa((ip_addr_t*)addr);
 }
 
+char* zts_ipaddr_ntoa_r(const zts_ip_addr* addr, char* buf, int buflen)
+{
+    return ipaddr_ntoa_r((ip_addr_t*) addr, buf, buflen);
+}
+
 int zts_ipaddr_aton(const char* cp, zts_ip_addr* addr)
 {
     return ipaddr_aton(cp, (ip_addr_t*)addr);

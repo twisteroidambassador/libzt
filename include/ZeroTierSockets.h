@@ -3163,6 +3163,17 @@ zts_util_ntop(struct zts_sockaddr* addr, zts_socklen_t addrlen, char* dst_str, i
 char* zts_ipaddr_ntoa(const zts_ip_addr* addr);
 
 /**
+ * Same as ipaddr_ntoa, but reentrant since a user-supplied buffer is used.
+ *
+ * @param addr ip address in network order to convert
+ * @param buf target buffer where the string is stored
+ * @param buflen length of buf
+ * @return either pointer to buf which now holds the ASCII
+ *         representation of addr or NULL if buf was too small
+ */
+char* zts_ipaddr_ntoa_r(const zts_ip_addr* addr, char* buf, int buflen);
+
+/**
  * Convert IP address string (both versions) to numeric.
  * The version is auto-detected from the string.
  *
