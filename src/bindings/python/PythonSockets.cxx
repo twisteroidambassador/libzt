@@ -188,7 +188,6 @@ PyObject* zts_py_recv(int fd, int len, int flags)
         Py_DECREF(buf);
         Py_INCREF(Py_None);
         PyTuple_SetItem(t, 1, Py_None);
-        Py_INCREF(t);
         return t;
     }
 
@@ -197,7 +196,6 @@ PyObject* zts_py_recv(int fd, int len, int flags)
     }
 
     PyTuple_SetItem(t, 1, buf);
-    Py_INCREF(t);
     return t;
 }
 
@@ -661,7 +659,6 @@ PyObject* zts_py_gettimeout(int fd)
         PyTuple_SetItem(t, 0, PyLong_FromLong((long) res));
         Py_INCREF(Py_None);
         PyTuple_SetItem(t, 1, Py_None);
-        Py_INCREF(t);
         return t;
     }
 
@@ -670,7 +667,6 @@ PyObject* zts_py_gettimeout(int fd)
         PyTuple_SetItem(t, 0, PyLong_FromLong(0L));
         Py_INCREF(Py_None);
         PyTuple_SetItem(t, 1, Py_None);
-        Py_INCREF(t);
         return t;
     }
 
@@ -682,7 +678,6 @@ PyObject* zts_py_gettimeout(int fd)
         PyTuple_SetItem(t, 0, PyLong_FromLong((long) res));
         Py_INCREF(Py_None);
         PyTuple_SetItem(t, 1, Py_None);
-        Py_INCREF(t);
         return t;
     }
 
@@ -691,7 +686,6 @@ PyObject* zts_py_gettimeout(int fd)
     double timeout = 1e-3 * (double) res;
     PyTuple_SetItem(t, 0, PyLong_FromLong(0L));
     PyTuple_SetItem(t, 1, PyFloat_FromDouble(timeout));
-    Py_INCREF(t);
     return t;
 }
 
