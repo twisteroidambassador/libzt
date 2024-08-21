@@ -897,7 +897,7 @@ typedef struct {
     /**
      * DNS server addresses
      */
-    zts_ip_addr dns_addresses[ZTS_MAX_DNS_SERVERS];
+    struct zts_sockaddr_storage dns_addresses[ZTS_MAX_DNS_SERVERS];
 } zts_net_info_t;
 
 /**

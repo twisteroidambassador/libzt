@@ -38,9 +38,6 @@
 %include "ZeroTierSockets.h"
 %include "PythonSockets.h"
 
-%include "carrays.i"
-%array_functions(zts_ip_addr, zts_ip_addr_array);
-
 %extend zts_net_info_t {
     PyObject* get_all_routes() {
         PyObject* routes_list = PyList_New($self->route_count);
@@ -60,5 +57,21 @@
             PyList_SET_ITEM(routes_list, i, t);
         }
         return routes_list;
+    }
+
+    PyObject* get_all_dns_addresses() {
+        PyObject* dns_list = PyList_New(ZTS_MAX_DNS_SERVERS);
+        if (dns_list == NULL) {
+            return NULL;
+        }
+        for (unsigned int i = 0; i < ZTS_MAX_DNS_SERVERS; i++) {
+            PyObject* a = zts_py_sockaddr_to_tuple(reinterpret_cast<struct zts_sockaddr*> (&($self->dns_addresses[i])));
+            if (a == NULL) {
+                Py_DECREF(dns_list);
+                return NULL;
+            }
+            PyList_SET_ITEM(dns_list, i, a);
+        }
+        return dns_list;
     }
 }

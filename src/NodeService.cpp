@@ -1023,12 +1023,15 @@ void NodeService::sendEventToUser(unsigned int zt_event_code, const void* obj, u
             for (unsigned int i = 0; i < ZTS_MAX_DNS_SERVERS; i++) {
                 switch (ns->config.dns.server_addr[i].ss_family) {
                     case AF_INET:
-                        nt->dns_addresses[i].u_addr.ip4.addr = reinterpret_cast<sockaddr_in *>(&(ns->config.dns.server_addr[i]))->sin_addr.s_addr;
-                        nt->dns_addresses[i].type = ZTS_IPADDR_TYPE_V4;
+                        nt->dns_addresses[i].ss_family = ZTS_AF_INET;
+                        reinterpret_cast<struct zts_sockaddr_in*> (&(nt->dns_addresses[i]))->sin_addr.s_addr =
+                            reinterpret_cast<struct sockaddr_in*> (&(ns->config.dns.server_addr[i]))->sin_addr.s_addr;
                         break;
                     case AF_INET6:
-                        memcpy(nt->dns_addresses[i].u_addr.ip6.addr, reinterpret_cast<sockaddr_in6 *>(&(ns->config.dns.server_addr[i]))->sin6_addr.s6_addr, 16);
-                        nt->dns_addresses[i].type = ZTS_IPADDR_TYPE_V6;
+                        nt->dns_addresses[i].ss_family = ZTS_AF_INET6;
+                        memcpy(
+                            reinterpret_cast<struct zts_sockaddr_in6*> (&(nt->dns_addresses[i]))->sin6_addr.un.u8_addr,
+                            reinterpret_cast<struct sockaddr_in6 *>(&(ns->config.dns.server_addr[i]))->sin6_addr.s6_addr, 16);
                         break;
                     default:
                         break;
