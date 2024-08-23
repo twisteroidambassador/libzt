@@ -133,6 +133,144 @@ def errno():
     """Return errno value of low-level socket layer"""
     return libzt.cvar.zts_errno
 
+def has_dualstack_ipv6(self):
+    """Return whether libzt supports dual stack sockets: yes"""
+    return True
+
+def socketpair(sock_family, sock_type, sock_proto):
+    """Intentionally not supported"""
+    raise NotImplementedError(
+        "socketpair(): libzt does not support AF_UNIX sockets"
+    )
+
+def create_connection(remote_address):
+    """Convenience function to create a connection to a remote host"""
+    # TODO: implement timeout
+    conn = socket(libzt.ZTS_AF_INET, libzt.ZTS_SOCK_STREAM, 0)
+    conn.connect(remote_address)
+    return conn
+
+def create_server(local_address, sock_family=libzt.ZTS_AF_INET, backlog=None):
+    """Convenience function to create a listening socket"""
+    # TODO: implement reuse_port
+    conn = socket(sock_family, libzt.ZTS_SOCK_STREAM, 0)
+    conn.bind(local_address)
+    conn.listen(backlog)
+    return conn
+
+def fromfd(fd, sock_family, sock_type, sock_proto=0):
+    """libzt does not support this (yet)"""
+    raise NotImplementedError("ZeroTier does not expose OS-level sockets")
+
+def fromshare(data):
+    """ZeroTier sockets cannot be shared"""
+    raise NotImplementedError("ZeroTier sockets cannot be shared")
+
+def getaddrinfo(
+        host, port, sock_family=0, sock_type=0, sock_proto=0, flags=0
+):
+    """libzt does not support this (yet)"""
+    raise NotImplementedError("libzt does not support this (yet?)")
+
+def getfqdn(name):
+    """libzt does not support this (yet)"""
+    raise NotImplementedError("libzt does not support this (yet?)")
+
+def gethostbyname(hostname):
+    """libzt does not support this (yet)"""
+    raise NotImplementedError("libzt does not support this (yet?)")
+
+def gethostbyname_ex(hostname):
+    """libzt does not support this (yet)"""
+    raise NotImplementedError("libzt does not support this (yet?)")
+
+def gethostname():
+    """libzt does not support this (yet)"""
+    raise NotImplementedError("libzt does not support this (yet?)")
+
+def gethostbyaddr(ip_address):
+    """libzt does not support this (yet)"""
+    raise NotImplementedError("libzt does not support this (yet?)")
+
+def getnameinfo(sockaddr, flags):
+    """libzt does not support this (yet)"""
+    raise NotImplementedError("libzt does not support this (yet?)")
+
+def getprotobyname(protocolname):
+    """libzt does not support this (yet)"""
+    raise NotImplementedError("libzt does not support this (yet?)")
+
+def getservbyname(servicename, protocolname):
+    """libzt does not support this (yet)"""
+    raise NotImplementedError("libzt does not support this (yet?)")
+
+def getservbyport(port, protocolname):
+    """libzt does not support this (yet)"""
+    raise NotImplementedError("libzt does not support this (yet?)")
+
+def ntohl(x):
+    """libzt does not support this (yet)"""
+    raise NotImplementedError("libzt does not support this (yet?)")
+
+def ntohs(x):
+    """libzt does not support this (yet)"""
+    raise NotImplementedError("libzt does not support this (yet?)")
+
+def htonl(x):
+    """libzt does not support this (yet)"""
+    raise NotImplementedError("libzt does not support this (yet?)")
+
+def htons(x):
+    """libzt does not support this (yet)"""
+    raise NotImplementedError("libzt does not support this (yet?)")
+
+def inet_aton(ip_string):
+    """libzt does not support this (yet)"""
+    raise NotImplementedError("libzt does not support this (yet?)")
+
+def inet_ntoa(packed_ip):
+    """libzt does not support this (yet)"""
+    raise NotImplementedError("libzt does not support this (yet?)")
+
+def inet_pton(address_family, ip_string):
+    """libzt does not support this (yet)"""
+    raise NotImplementedError("libzt does not support this (yet?)")
+
+def inet_ntop(address_family, packed_ip):
+    """libzt does not support this (yet)"""
+    raise NotImplementedError("libzt does not support this (yet?)")
+
+def CMSG_LEN(length):
+    """libzt does not support this (yet)"""
+    raise NotImplementedError("libzt does not support this (yet?)")
+
+def CMSG_SPACE(length):
+    """libzt does not support this (yet)"""
+    raise NotImplementedError("libzt does not support this (yet?)")
+
+def getdefaulttimeout(self):
+    """libzt does not support this (yet)"""
+    raise NotImplementedError("libzt does not support this (yet?)")
+
+def setdefaulttimeout(timeout):
+    """libzt does not support this (yet)"""
+    raise NotImplementedError("libzt does not support this (yet?)")
+
+def sethostname(name):
+    """libzt does not support this (yet)"""
+    raise NotImplementedError("libzt does not support this (yet?)")
+
+def if_nameindex():
+    """libzt does not support this"""
+    raise NotImplementedError("if_nameindex(): libzt does not name interfaces.")
+
+def if_nametoindex(if_name):
+    """libzt does not support this"""
+    raise NotImplementedError("if_nametoindex(): libzt does not name interfaces.")
+
+def if_indextoname(if_index):
+    """libzt does not support this"""
+    raise NotImplementedError("if_indextoname(): libzt does not name interfaces.")
 
 class socket:
     """Pythonic class that wraps low-level sockets"""
@@ -155,10 +293,6 @@ class socket:
         if sock_fd is None:
             self._fd = libzt.zts_bsd_socket(sock_family, sock_type, sock_proto)
 
-    def has_dualstack_ipv6(self):
-        """Return whether libzt supports dual stack sockets: yes"""
-        return True
-
     @property
     def family(self):
         """Return family of socket"""
@@ -173,141 +307,6 @@ class socket:
     def proto(self):
         """Return protocol of socket"""
         return self._proto
-
-    def socketpair(self, sock_family, sock_type, sock_proto):
-        """Intentionally not supported"""
-        raise NotImplementedError(
-            "socketpair(): libzt does not support AF_UNIX sockets"
-        )
-
-    def create_connection(self, remote_address):
-        """Convenience function to create a connection to a remote host"""
-        # TODO: implement timeout
-        conn = socket(libzt.ZTS_AF_INET, libzt.ZTS_SOCK_STREAM, 0)
-        conn.connect(remote_address)
-        return conn
-
-    def create_server(self, local_address, sock_family=libzt.ZTS_AF_INET, backlog=None):
-        """Convenience function to create a listening socket"""
-        # TODO: implement reuse_port
-        conn = socket(sock_family, libzt.ZTS_SOCK_STREAM, 0)
-        conn.bind(local_address)
-        conn.listen(backlog)
-        return conn
-
-    def fromfd(self, fd, sock_family, sock_type, sock_proto=0):
-        """libzt does not support this (yet)"""
-        raise NotImplementedError("ZeroTier does not expose OS-level sockets")
-
-    def fromshare(self, data):
-        """ZeroTier sockets cannot be shared"""
-        raise NotImplementedError("ZeroTier sockets cannot be shared")
-
-    def getaddrinfo(
-        self, host, port, sock_family=0, sock_type=0, sock_proto=0, flags=0
-    ):
-        """libzt does not support this (yet)"""
-        raise NotImplementedError("libzt does not support this (yet?)")
-
-    def getfqdn(self, name):
-        """libzt does not support this (yet)"""
-        raise NotImplementedError("libzt does not support this (yet?)")
-
-    def gethostbyname(self, hostname):
-        """libzt does not support this (yet)"""
-        raise NotImplementedError("libzt does not support this (yet?)")
-
-    def gethostbyname_ex(self, hostname):
-        """libzt does not support this (yet)"""
-        raise NotImplementedError("libzt does not support this (yet?)")
-
-    def gethostname(self):
-        """libzt does not support this (yet)"""
-        raise NotImplementedError("libzt does not support this (yet?)")
-
-    def gethostbyaddr(self, ip_address):
-        """libzt does not support this (yet)"""
-        raise NotImplementedError("libzt does not support this (yet?)")
-
-    def getnameinfo(self, sockaddr, flags):
-        """libzt does not support this (yet)"""
-        raise NotImplementedError("libzt does not support this (yet?)")
-
-    def getprotobyname(self, protocolname):
-        """libzt does not support this (yet)"""
-        raise NotImplementedError("libzt does not support this (yet?)")
-
-    def getservbyname(self, servicename, protocolname):
-        """libzt does not support this (yet)"""
-        raise NotImplementedError("libzt does not support this (yet?)")
-
-    def getservbyport(self, port, protocolname):
-        """libzt does not support this (yet)"""
-        raise NotImplementedError("libzt does not support this (yet?)")
-
-    def ntohl(x):
-        """libzt does not support this (yet)"""
-        raise NotImplementedError("libzt does not support this (yet?)")
-
-    def ntohs(x):
-        """libzt does not support this (yet)"""
-        raise NotImplementedError("libzt does not support this (yet?)")
-
-    def htonl(x):
-        """libzt does not support this (yet)"""
-        raise NotImplementedError("libzt does not support this (yet?)")
-
-    def htons(x):
-        """libzt does not support this (yet)"""
-        raise NotImplementedError("libzt does not support this (yet?)")
-
-    def inet_aton(ip_string):
-        """libzt does not support this (yet)"""
-        raise NotImplementedError("libzt does not support this (yet?)")
-
-    def inet_ntoa(packed_ip):
-        """libzt does not support this (yet)"""
-        raise NotImplementedError("libzt does not support this (yet?)")
-
-    def inet_pton(address_family, ip_string):
-        """libzt does not support this (yet)"""
-        raise NotImplementedError("libzt does not support this (yet?)")
-
-    def inet_ntop(address_family, packed_ip):
-        """libzt does not support this (yet)"""
-        raise NotImplementedError("libzt does not support this (yet?)")
-
-    def CMSG_LEN(length):
-        """libzt does not support this (yet)"""
-        raise NotImplementedError("libzt does not support this (yet?)")
-
-    def CMSG_SPACE(length):
-        """libzt does not support this (yet)"""
-        raise NotImplementedError("libzt does not support this (yet?)")
-
-    def getdefaulttimeout(self):
-        """libzt does not support this (yet)"""
-        raise NotImplementedError("libzt does not support this (yet?)")
-
-    def setdefaulttimeout(self, timeout):
-        """libzt does not support this (yet)"""
-        raise NotImplementedError("libzt does not support this (yet?)")
-
-    def sethostname(self, name):
-        """libzt does not support this (yet)"""
-        raise NotImplementedError("libzt does not support this (yet?)")
-
-    def if_nameindex(self):
-        """libzt does not support this"""
-        raise NotImplementedError("if_nameindex(): libzt does not name interfaces.")
-
-    def if_nametoindex(self, if_name):
-        """libzt does not support this"""
-        raise NotImplementedError("if_nametoindex(): libzt does not name interfaces.")
-
-    def if_indextoname(self, if_index):
-        """libzt does not support this"""
-        raise NotImplementedError("if_indextoname(): libzt does not name interfaces.")
 
     def accept(self):
         """accept() -> (socket, address_info)
@@ -418,7 +417,7 @@ class socket:
         if err < 0:
             handle_error(err)
 
-    def makefile(mode="r", buffering=None, *, encoding=None, errors=None, newline=None):
+    def makefile(self, mode="r", buffering=None, *, encoding=None, errors=None, newline=None):
         """libzt does not support this (yet)"""
         raise NotImplementedError("libzt does not support this (yet?)")
 
