@@ -37,7 +37,7 @@ int zts_py_close(int fd);
 
 PyObject* zts_py_addr_get_str(uint64_t net_id, int family);
 
-PyObject* zts_py_select(PyObject* module, PyObject* rlist, PyObject* wlist, PyObject* xlist, PyObject* timeout_obj);
+PyObject* zts_py_select(PyObject* rlist, PyObject* wlist, PyObject* xlist, PyObject* timeout_obj);
 
 int zts_py_setsockopt(int fd, PyObject* args);
 

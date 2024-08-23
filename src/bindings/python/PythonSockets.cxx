@@ -366,7 +366,7 @@ finally:
 /* returns -1 and sets the Python exception if an error occurred, otherwise
    returns a number >= 0
 */
-int seq2set(PyObject* seq, zts_fd_set* set, pylist fd2obj[FD_SETSIZE + 1])
+int seq2set(PyObject* seq, zts_fd_set* set, pylist fd2obj[ZTS_FD_SETSIZE + 1])
 {
     int max = -1;
     unsigned int index = 0;
@@ -396,21 +396,13 @@ int seq2set(PyObject* seq, zts_fd_set* set, pylist fd2obj[FD_SETSIZE + 1])
             goto finally;
         }
 
-#if defined(_MSC_VER)
-        max = 0; /* not used for Win32 */
-#else            /* !_MSC_VER */
-        if (! _PyIsSelectable_fd(v)) {
-            PyErr_SetString(PyExc_ValueError, "filedescriptor out of range in select()");
-            goto finally;
-        }
         if (v > max) {
             max = v;
         }
-#endif           /* _MSC_VER */
         ZTS_FD_SET(v, set);
 
         /* add object and its file descriptor to the list */
-        if (index >= (unsigned int)FD_SETSIZE) {
+        if (index >= (unsigned int)ZTS_FD_SETSIZE) {
             PyErr_SetString(PyExc_ValueError, "too many file descriptors in select()");
             goto finally;
         }
@@ -428,11 +420,11 @@ finally:
     return -1;
 }
 
-PyObject* zts_py_select(PyObject* module, PyObject* rlist, PyObject* wlist, PyObject* xlist, PyObject* timeout_obj)
+PyObject* zts_py_select(PyObject* rlist, PyObject* wlist, PyObject* xlist, PyObject* timeout_obj)
 {
-    pylist rfd2obj[FD_SETSIZE + 1];
-    pylist wfd2obj[FD_SETSIZE + 1];
-    pylist efd2obj[FD_SETSIZE + 1];
+    pylist rfd2obj[ZTS_FD_SETSIZE + 1];
+    pylist wfd2obj[ZTS_FD_SETSIZE + 1];
+    pylist efd2obj[ZTS_FD_SETSIZE + 1];
     PyObject* ret = NULL;
     zts_fd_set ifdset, ofdset, efdset;
     struct timeval tv, *tvp;
@@ -493,6 +485,11 @@ PyObject* zts_py_select(PyObject* module, PyObject* rlist, PyObject* wlist, PyOb
 
     do {
         Py_BEGIN_ALLOW_THREADS;
+        /* zts_bsd_* methods are supposed to set zts_errno.
+         * In fact they also set the regular errno, and zts_errno is not thread safe,
+         * so might as well just use errno.
+         * But lwIP never sets EINTR anyways.
+         * */
         errno = 0;
         // struct zts_timeval zts_tvp;
         // zts_tvp.tv_sec = tvp.tv_sec;
@@ -501,11 +498,12 @@ PyObject* zts_py_select(PyObject* module, PyObject* rlist, PyObject* wlist, PyOb
         n = zts_bsd_select(max, &ifdset, &ofdset, &efdset, (struct zts_timeval*)tvp);
         Py_END_ALLOW_THREADS;
 
-        if (errno != EINTR) {
+        if (errno != ZTS_EINTR) {
             break;
         }
 
         /* select() was interrupted by a signal */
+        /* This should be harmless here? */
         if (PyErr_CheckSignals()) {
             goto finally;
         }
@@ -525,15 +523,9 @@ PyObject* zts_py_select(PyObject* module, PyObject* rlist, PyObject* wlist, PyOb
         }
     } while (1);
 
-#ifdef MS_WINDOWS
-    if (n == SOCKET_ERROR) {
-        PyErr_SetExcFromWindowsErr(PyExc_OSError, WSAGetLastError());
-    }
-#else
     if (n < 0) {
         PyErr_SetFromErrno(PyExc_OSError);
     }
-#endif
     else {
         /* any of these three calls can raise an exception.  it's more
            convenient to test for this after all three calls... but
