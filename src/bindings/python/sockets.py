@@ -115,9 +115,9 @@ def handle_error(err):
             raise TimeoutError()
         raise ConnectionError(zts_errno(sock_err).name + " (" + str(sock_err) + ")")
     if err == libzt.ZTS_ERR_SERVICE:
-        raise Exception("ZTS_ERR_SERVICE (" + str(err) + ")")
+        raise RuntimeError("ZTS_ERR_SERVICE (" + str(err) + ")")
     if err == libzt.ZTS_ERR_ARG:
-        raise Exception("ZTS_ERR_ARG (" + str(err) + ")")
+        raise TypeError("ZTS_ERR_ARG (" + str(err) + ")")
     # ZTS_ERR_NO_RESULT isn't strictly an error
     # if (err == libzt.ZTS_ERR_NO_RESULT):
     #   raise Exception('ZTS_ERR_NO_RESULT (' + err + ')')
