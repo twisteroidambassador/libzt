@@ -437,9 +437,17 @@ class socket:
             return None
         return data
 
-    def recvfrom(self, bufsize, flags):
-        """libzt does not support this (yet)"""
-        raise NotImplementedError("libzt does not support this (yet?)")
+    def recvfrom(self, bufsize, flags=0):
+        """recvfrom(buffersize[, flags]) -> data, address
+
+        Receive data from the socket.
+        The return value is a pair (bytes, address) where bytes is a bytes object
+        representing the data received and address is the address of the socket
+        sending the data."""
+        err, data, addr = libzt.zts_py_recvfrom(self._fd, bufsize, flags)
+        if err < 0:
+            return handle_error(err)
+        return data, addr
 
     def recvmsg(self, bufsize, ancbufsize, flags):
         """libzt does not support this (yet)"""

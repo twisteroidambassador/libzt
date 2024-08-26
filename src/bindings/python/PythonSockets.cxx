@@ -200,6 +200,34 @@ PyObject* zts_py_recv(int fd, int len, int flags)
     return t;
 }
 
+PyObject* zts_py_recvfrom(int fd, int len, int flags)
+{
+    ssize_t bytes_read;
+    struct zts_sockaddr addr;
+    zts_socklen_t addrlen = sizeof(addr);
+
+    PyObject* buf = PyBytes_FromStringAndSize(nullptr, len);
+    if (buf == NULL) {
+        return NULL;
+    }
+
+    Py_BEGIN_ALLOW_THREADS;
+    bytes_read = zts_bsd_recvfrom(fd, PyBytes_AS_STRING(buf), len, flags, &addr, &addrlen);
+    Py_END_ALLOW_THREADS;
+
+    if (bytes_read < 0) {
+        Py_DECREF(buf);
+        return Py_BuildValue("lss", bytes_read, NULL, NULL);
+    }
+
+    if (bytes_read != len) {
+        _PyBytes_Resize(&buf, bytes_read);
+    }
+
+    return Py_BuildValue(
+        "lNN", bytes_read, buf, zts_py_sockaddr_to_tuple(reinterpret_cast<struct zts_sockaddr*>(&addr)));
+}
+
 int zts_py_send(int fd, PyObject* buf, int flags)
 {
     Py_buffer output;
