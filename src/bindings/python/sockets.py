@@ -125,13 +125,10 @@ def handle_error(err):
         raise Exception("ZTS_ERR_GENERAL (" + str(err) + ")")
 
 
-# This implementation of errno is NOT thread safe
-# That is, this value is shared among all lower-level socket calls
-# and may change for any reason at any time if you have multiple
-# threads making socket calls.
+# This uses the OS's native errno, which should be thread safe
 def errno():
     """Return errno value of low-level socket layer"""
-    return libzt.cvar.zts_errno
+    return libzt.zts_py_get_native_errno()
 
 def has_dualstack_ipv6(self):
     """Return whether libzt supports dual stack sockets: yes"""

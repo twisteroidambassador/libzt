@@ -38,6 +38,7 @@
 #include "lwip/sockets.h"
 #include "structmember.h"   // PyMemberDef
 
+#include <errno.h>
 #include <string.h>
 #include <sys/time.h>
 
@@ -853,6 +854,10 @@ PyObject* zts_py_ioctl(int fd, unsigned int code, PyObject* ob_arg, int mutate_a
     }
     return PyLong_FromLong((long)ret);
 #undef IOCTL_BUFSZ
+}
+
+PyObject* zts_py_get_native_errno() {
+    return Py_BuildValue("i", errno);
 }
 
 #endif   // ZTS_ENABLE_PYTHON
