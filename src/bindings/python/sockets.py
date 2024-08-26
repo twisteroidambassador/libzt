@@ -272,23 +272,19 @@ def if_indextoname(if_index):
 class socket:
     """Pythonic class that wraps low-level sockets"""
 
-    _fd = -1  # native layer file descriptor
-    _family = -1
-    _type = -1
-    _proto = -1
-    _connected = False
-    _closed = True
-    _bound = False
-
     def __init__(self, sock_family=-1, sock_type=-1, sock_proto=-1, sock_fd=None):
         self._fd = sock_fd
         self._family = sock_family
         self._type = sock_type
-        self._family = sock_family
+        self._proto = sock_proto
         # Only create native socket if no fd was provided. We may have
         # accepted a connection
         if sock_fd is None:
             self._fd = libzt.zts_bsd_socket(sock_family, sock_type, sock_proto)
+            if self._fd < 0:
+                handle_error(self._fd)
+
+        self._closed = False
 
     @property
     def family(self):
@@ -329,7 +325,11 @@ class socket:
         """close()
 
         Close the socket"""
+        if self._closed:
+            return
+        self._closed = True
         err = libzt.zts_py_close(self._fd)
+        self._fd = -1
         if err < 0:
             handle_error(err)
 
