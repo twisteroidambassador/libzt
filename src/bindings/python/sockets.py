@@ -379,7 +379,10 @@ class socket:
 
     def getpeername(self):
         """Return the remote address to which the socket is connected."""
-        return libzt.zts_py_getpeername(self._fd)
+        err, peername = libzt.zts_py_getpeername(self._fd)
+        if err != libzt.ZTS_ERR_OK:
+            return handle_error(err)
+        return peername
 
     def getsockname(self):
         """libzt does not support this (yet)"""
