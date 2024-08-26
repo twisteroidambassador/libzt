@@ -385,8 +385,11 @@ class socket:
         return peername
 
     def getsockname(self):
-        """libzt does not support this (yet)"""
-        raise NotImplementedError("libzt does not support this (yet?)")
+        """Return the socket’s own address."""
+        err, sockname = libzt.zts_py_getsockname(self._fd)
+        if err != libzt.ZTS_ERR_OK:
+            return handle_error(err)
+        return sockname
 
     def getsockopt(self, level, optname, buflen=None):
         """Get a socket option value"""
