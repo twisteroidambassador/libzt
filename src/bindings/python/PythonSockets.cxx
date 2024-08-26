@@ -860,4 +860,13 @@ PyObject* zts_py_get_native_errno() {
     return Py_BuildValue("i", errno);
 }
 
+PyObject* zts_py_getpeername(int fd) {
+    struct zts_sockaddr_storage sa;
+    zts_socklen_t len = sizeof(sa);
+    Py_BEGIN_ALLOW_THREADS;
+    zts_bsd_getpeername(fd, reinterpret_cast<struct zts_sockaddr*>(&sa), &len);
+    Py_END_ALLOW_THREADS;
+    return zts_py_sockaddr_to_tuple(reinterpret_cast<struct zts_sockaddr*>(&sa));
+}
+
 #endif   // ZTS_ENABLE_PYTHON

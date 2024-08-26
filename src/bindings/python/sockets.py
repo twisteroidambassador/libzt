@@ -378,8 +378,8 @@ class socket:
         return libzt.zts_get_blocking(self._fd)
 
     def getpeername(self):
-        """libzt does not support this (yet)"""
-        raise NotImplementedError("libzt does not support this (yet?)")
+        """Return the remote address to which the socket is connected."""
+        return libzt.zts_py_getpeername(self._fd)
 
     def getsockname(self):
         """libzt does not support this (yet)"""

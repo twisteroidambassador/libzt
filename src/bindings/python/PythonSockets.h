@@ -49,6 +49,8 @@ PyObject* zts_py_gettimeout(int fd);
 
 PyObject* zts_py_get_native_errno();
 
+PyObject* zts_py_getpeername(int fd);
+
 #endif   // ZTS_ENABLE_PYTHON
 
 #endif   // ZTS_PYTHON_SOCKETS_H
