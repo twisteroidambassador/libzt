@@ -484,45 +484,19 @@ PyObject* zts_py_select(PyObject* rlist, PyObject* wlist, PyObject* xlist, PyObj
         deadline = _PyTime_GetMonotonicClock() + timeout;
     }
 
-    do {
-        Py_BEGIN_ALLOW_THREADS;
-        /* zts_bsd_* methods are supposed to set zts_errno.
-         * In fact they also set the regular errno, and zts_errno is not thread safe,
-         * so might as well just use errno.
-         * But lwIP never sets EINTR anyways.
-         * */
-        errno = 0;
-        // struct zts_timeval zts_tvp;
-        // zts_tvp.tv_sec = tvp.tv_sec;
-        // zts_tvp.tv_sec = tvp.tv_sec;
+    Py_BEGIN_ALLOW_THREADS;
+    /* zts_bsd_* methods are supposed to set zts_errno.
+     * In fact they also set the regular errno, and zts_errno is not thread safe,
+     * so might as well just use errno.
+     * But lwIP never sets EINTR anyways.
+     * */
+    errno = 0;
+    // struct zts_timeval zts_tvp;
+    // zts_tvp.tv_sec = tvp.tv_sec;
+    // zts_tvp.tv_sec = tvp.tv_sec;
 
-        n = zts_bsd_select(max, &ifdset, &ofdset, &efdset, (struct zts_timeval*)tvp);
-        Py_END_ALLOW_THREADS;
-
-        if (errno != ZTS_EINTR) {
-            break;
-        }
-
-        /* select() was interrupted by a signal */
-        /* This should be harmless here? */
-        if (PyErr_CheckSignals()) {
-            goto finally;
-        }
-
-        if (tvp) {
-            timeout = deadline - _PyTime_GetMonotonicClock();
-            if (timeout < 0) {
-                /* bpo-35310: lists were unmodified -- clear them explicitly */
-                ZTS_FD_ZERO(&ifdset);
-                ZTS_FD_ZERO(&ofdset);
-                ZTS_FD_ZERO(&efdset);
-                n = 0;
-                break;
-            }
-            _PyTime_AsTimeval_clamp(timeout, &tv, _PyTime_ROUND_CEILING);
-            /* retry select() with the recomputed timeout */
-        }
-    } while (1);
+    n = zts_bsd_select(max, &ifdset, &ofdset, &efdset, (struct zts_timeval*)tvp);
+    Py_END_ALLOW_THREADS;
 
     if (n < 0) {
         PyErr_SetFromErrno(PyExc_OSError);
