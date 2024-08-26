@@ -392,10 +392,6 @@ class socket:
         """Get a socket option value"""
         return libzt.zts_py_getsockopt(self._fd, (level, optname))
 
-    def gettimeout(self):
-        """libzt does not support this (yet)"""
-        raise NotImplementedError("libzt does not support this (yet?)")
-
     def ioctl(self, request, arg=0, mutate_flag=True):
         """Perform I/O control operations"""
         return libzt.zts_py_ioctl(self._fd, request, arg, mutate_flag)
