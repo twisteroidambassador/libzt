@@ -31,7 +31,7 @@ PyObject* zts_py_recv(int fd, int len, int flags);
 
 PyObject* zts_py_recvfrom(int fd, int len, int flags);
 
-int zts_py_send(int fd, PyObject* buf, int flags);
+PyObject* zts_py_send(int fd, PyObject* buf, int flags);
 
 int zts_py_sendall(int fd, PyObject* bytes, int flags);
 

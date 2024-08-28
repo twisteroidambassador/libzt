@@ -235,20 +235,20 @@ PyObject* zts_py_recvfrom(int fd, int len, int flags)
         "lNN", bytes_read, buf, zts_py_sockaddr_to_tuple(reinterpret_cast<struct zts_sockaddr*>(&addr)));
 }
 
-int zts_py_send(int fd, PyObject* buf, int flags)
+PyObject* zts_py_send(int fd, PyObject* buf, int flags)
 {
     Py_buffer output;
     int bytes_sent;
 
     if (PyObject_GetBuffer(buf, &output, PyBUF_SIMPLE) != 0) {
-        return 0;
+        return NULL;
     }
     Py_BEGIN_ALLOW_THREADS;
     bytes_sent = zts_bsd_send(fd, output.buf, output.len, flags);
     Py_END_ALLOW_THREADS;
     PyBuffer_Release(&output);
 
-    return bytes_sent;
+    return PyLong_FromSsize_t(bytes_sent);
 }
 
 int zts_py_sendall(int fd, PyObject* bytes, int flags)
