@@ -47,51 +47,57 @@ PyObject* set_error(void)
     return NULL;   // PyErr_SetFromErrno(zts_errno);
 }
 
-static int zts_py_tuple_to_sockaddr(int family, PyObject* addr_obj, struct zts_sockaddr* dst_addr, int* addrlen)
+static int zts_py_tuple_to_sockaddr(int family, PyObject* addr_obj, struct zts_sockaddr* dst_addr, zts_socklen_t* addrlen)
 {
     if (family == AF_INET) {
         struct zts_sockaddr_in* addr;
-        char* host_str;
-        int result, port;
+        if (*addrlen < sizeof(*addr)) {
+            return ZTS_ERR_ARG;
+        }
         if (! PyTuple_Check(addr_obj)) {
             return ZTS_ERR_ARG;
         }
+        char* host_str;
+        int port;
         if (! PyArg_ParseTuple(addr_obj, "eti:zts_py_tuple_to_sockaddr", "idna", &host_str, &port)) {
             return ZTS_ERR_ARG;
         }
         addr = (struct zts_sockaddr_in*)dst_addr;
-        result = zts_inet_pton(ZTS_AF_INET, host_str, &(addr->sin_addr));
+        int result = zts_inet_pton(ZTS_AF_INET, host_str, &(addr->sin_addr));
         PyMem_Free(host_str);
         if (port < 0 || port > 0xFFFF) {
             return ZTS_ERR_ARG;
         }
-        if (result < 0) {
+        if (result != 1) {
             return ZTS_ERR_ARG;
         }
         addr->sin_family = AF_INET;
         addr->sin_port = lwip_htons((short)port);
         addr->sin_len = sizeof(*addr);
-        *addrlen = sizeof *addr;
+        *addrlen = sizeof(*addr);
         return ZTS_ERR_OK;
     }
     if (family == AF_INET6) {
         struct zts_sockaddr_in6* addr;
-        char* host_str;
-        int result, port;
-        uint32_t flowinfo = 0, scope_id = 0;
+        if (*addrlen < sizeof(*addr)) {
+            return ZTS_ERR_ARG;
+        }
         if (! PyTuple_Check(addr_obj)) {
             return ZTS_ERR_ARG;
         }
+        char* host_str;
+        int port;
+        uint32_t flowinfo = 0, scope_id = 0;
         if (! PyArg_ParseTuple(addr_obj, "eti|II:zts_py_tuple_to_sockaddr", "idna", &host_str, &port, &flowinfo, &scope_id)) {
             return ZTS_ERR_ARG;
         }
         addr = (struct zts_sockaddr_in6*)dst_addr;
-        result = zts_inet_pton(ZTS_AF_INET6, host_str, &(addr->sin6_addr));
+        int result = zts_inet_pton(ZTS_AF_INET6, host_str, &(addr->sin6_addr));
         PyMem_Free(host_str);
         if (port < 0 || port > 0xFFFF) {
             return ZTS_ERR_ARG;
         }
-        if (result < 0) {
+        if (result != 1) {
             return ZTS_ERR_ARG;
         }
         addr->sin6_family = AF_INET6;
@@ -144,7 +150,7 @@ PyObject* zts_py_accept(int fd)
 int zts_py_bind(int fd, int family, int type, PyObject* addr_obj)
 {
     struct zts_sockaddr_storage addrbuf;
-    int addrlen;
+    zts_socklen_t addrlen = sizeof(addrbuf);
     int err;
     if (zts_py_tuple_to_sockaddr(family, addr_obj, (struct zts_sockaddr*)&addrbuf, &addrlen) != ZTS_ERR_OK) {
         return ZTS_ERR_ARG;
@@ -158,7 +164,7 @@ int zts_py_bind(int fd, int family, int type, PyObject* addr_obj)
 int zts_py_connect(int fd, int family, int type, PyObject* addr_obj)
 {
     struct zts_sockaddr_storage addrbuf;
-    int addrlen;
+    zts_socklen_t addrlen = sizeof(addrbuf);
     int err;
     if (zts_py_tuple_to_sockaddr(family, addr_obj, (struct zts_sockaddr*)&addrbuf, &addrlen) != ZTS_ERR_OK) {
         return ZTS_ERR_ARG;
