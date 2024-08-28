@@ -203,7 +203,7 @@ PyObject* zts_py_recv(int fd, int len, int flags)
 PyObject* zts_py_recvfrom(int fd, int len, int flags)
 {
     ssize_t bytes_read;
-    struct zts_sockaddr addr;
+    struct zts_sockaddr_storage addr;
     zts_socklen_t addrlen = sizeof(addr);
 
     PyObject* buf = PyBytes_FromStringAndSize(nullptr, len);
@@ -212,7 +212,8 @@ PyObject* zts_py_recvfrom(int fd, int len, int flags)
     }
 
     Py_BEGIN_ALLOW_THREADS;
-    bytes_read = zts_bsd_recvfrom(fd, PyBytes_AS_STRING(buf), len, flags, &addr, &addrlen);
+    bytes_read = zts_bsd_recvfrom(
+        fd, PyBytes_AS_STRING(buf), len, flags, reinterpret_cast<struct zts_sockaddr*>(&addr), &addrlen);
     Py_END_ALLOW_THREADS;
 
     if (bytes_read < 0) {
