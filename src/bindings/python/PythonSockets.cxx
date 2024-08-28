@@ -327,6 +327,33 @@ done:
     return res;
 }
 
+PyObject* zts_py_sendto(int fd, int family, PyObject* buf, int flags, PyObject* addr_obj)
+{
+    Py_buffer data_to_send;
+    /* PyObject_GetBuffer raises BufferError on failure, so this method must be able to raise
+     * an exception, otherwise Python only sees a SystemError.
+     * That's why its return type is PyObject*.
+     * */
+    if (PyObject_GetBuffer(buf, &data_to_send, PyBUF_SIMPLE) != 0) {
+        return NULL;
+    }
+
+    struct zts_sockaddr_storage addrbuf;
+    zts_socklen_t addrlen = sizeof(addrbuf);
+    if (zts_py_tuple_to_sockaddr(family, addr_obj, reinterpret_cast<struct zts_sockaddr*>(&addrbuf), &addrlen) != ZTS_ERR_OK) {
+        PyErr_SetString(PyExc_TypeError, "Invalid address");
+        return NULL;
+    }
+    ssize_t bytes_sent;
+    Py_BEGIN_ALLOW_THREADS;
+    bytes_sent = zts_bsd_sendto(fd, data_to_send.buf, data_to_send.len, flags, reinterpret_cast<struct zts_sockaddr*>(&addrbuf), addrlen);
+    Py_END_ALLOW_THREADS;
+    PyBuffer_Release(&data_to_send);
+
+    /* Error handling for the sendto call is left for Python side */
+    return PyLong_FromSsize_t(bytes_sent);
+}
+
 int zts_py_close(int fd)
 {
     int err;

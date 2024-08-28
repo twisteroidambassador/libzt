@@ -499,9 +499,17 @@ class socket:
         if err < 0:
             handle_error(err)
 
-    def sendto(self, n_bytes, flags, address):
+    def sendto(self, data, flags_or_address, address=None):
         """libzt does not support this (yet)"""
-        raise NotImplementedError("libzt does not support this (yet?)")
+        if address is None:
+            address = flags_or_address
+            flags = 0
+        else:
+            flags = flags_or_address
+        err = libzt.zts_py_sendto(self._fd, self._family, data, flags, address)
+        if err < 0:
+            handle_error(err)
+        return err
 
     def sendmsg(self, buffers, ancdata, flags, address):
         """libzt does not support this (yet)"""

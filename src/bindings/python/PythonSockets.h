@@ -35,6 +35,8 @@ int zts_py_send(int fd, PyObject* buf, int flags);
 
 int zts_py_sendall(int fd, PyObject* bytes, int flags);
 
+PyObject* zts_py_sendto(int fd, int family, PyObject* buf, int flags, PyObject* addr_obj);
+
 int zts_py_close(int fd);
 
 PyObject* zts_py_addr_get_str(uint64_t net_id, int family);
