@@ -78,6 +78,7 @@
 #define LWIP_NETIF_EXT_STATUS_CALLBACK  0
 #define LWIP_NETIF_LINK_CALLBACK        0
 #define LWIP_NETIF_REMOVE_CALLBACK      0
+#define LWIP_NETIF_LOOPBACK             1
 
 /*------------------------------------------------------------------------------
 ------------------------------------ Presets -----------------------------------
