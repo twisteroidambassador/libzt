@@ -27,9 +27,13 @@ int zts_py_connect(int fd, int family, int type, PyObject* addro);
 
 PyObject* zts_py_accept(int fd);
 
-PyObject* zts_py_recv(int fd, int len, int flags);
+PyObject* zts_py_recv(int fd, size_t len, int flags);
 
-PyObject* zts_py_recvfrom(int fd, int len, int flags);
+PyObject* zts_py_recv_into(int fd, PyObject* buf, size_t nbytes, int flags);
+
+PyObject* zts_py_recvfrom(int fd, size_t len, int flags);
+
+PyObject* zts_py_recvfrom_into(int fd, PyObject* buf, size_t nbytes, int flags);
 
 PyObject* zts_py_send(int fd, PyObject* buf, int flags);
 

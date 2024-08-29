@@ -175,10 +175,10 @@ int zts_py_connect(int fd, int family, int type, PyObject* addr_obj)
     return err;
 }
 
-PyObject* zts_py_recv(int fd, int len, int flags)
+PyObject* zts_py_recv(int fd, size_t len, int flags)
 {
     PyObject *t, *buf;
-    int bytes_read;
+    ssize_t bytes_read;
 
     buf = PyBytes_FromStringAndSize((char*)0, len);
     if (buf == NULL) {
@@ -206,7 +206,29 @@ PyObject* zts_py_recv(int fd, int len, int flags)
     return t;
 }
 
-PyObject* zts_py_recvfrom(int fd, int len, int flags)
+PyObject* zts_py_recv_into(int fd, PyObject* buf, size_t nbytes, int flags) {
+    Py_buffer pbuf;
+    if (PyObject_GetBuffer(buf, &pbuf, PyBUF_SIMPLE|PyBUF_WRITABLE) != 0) {
+        return NULL;
+    }
+    if (nbytes > pbuf.len) {
+        PyBuffer_Release(&pbuf);
+        PyErr_SetString(PyExc_ValueError,
+                        "buffer too small for requested bytes");
+        return NULL;
+    }
+    if (nbytes == 0) {
+        nbytes = pbuf.len;
+    }
+    ssize_t bytes_read;
+    Py_BEGIN_ALLOW_THREADS;
+    bytes_read = zts_bsd_recv(fd, pbuf.buf, nbytes, flags);
+    Py_END_ALLOW_THREADS;
+    PyBuffer_Release(&pbuf);
+    return PyLong_FromSsize_t(bytes_read);
+}
+
+PyObject* zts_py_recvfrom(int fd, size_t len, int flags)
 {
     ssize_t bytes_read;
     struct zts_sockaddr_storage addr;
@@ -224,7 +246,7 @@ PyObject* zts_py_recvfrom(int fd, int len, int flags)
 
     if (bytes_read < 0) {
         Py_DECREF(buf);
-        return Py_BuildValue("lss", bytes_read, NULL, NULL);
+        return Py_BuildValue("nss", bytes_read, NULL, NULL);
     }
 
     if (bytes_read != len) {
@@ -232,7 +254,37 @@ PyObject* zts_py_recvfrom(int fd, int len, int flags)
     }
 
     return Py_BuildValue(
-        "lNN", bytes_read, buf, zts_py_sockaddr_to_tuple(reinterpret_cast<struct zts_sockaddr*>(&addr)));
+        "nNN", bytes_read, buf, zts_py_sockaddr_to_tuple(reinterpret_cast<struct zts_sockaddr*>(&addr)));
+}
+
+PyObject* zts_py_recvfrom_into(int fd, PyObject* buf, size_t nbytes, int flags) {
+    Py_buffer pbuf;
+    if (PyObject_GetBuffer(buf, &pbuf, PyBUF_SIMPLE|PyBUF_WRITABLE) != 0) {
+        return NULL;
+    }
+    if (nbytes > pbuf.len) {
+        PyBuffer_Release(&pbuf);
+        PyErr_SetString(PyExc_ValueError,
+                        "buffer too small for requested bytes");
+        return NULL;
+    }
+    if (nbytes == 0) {
+        nbytes = pbuf.len;
+    }
+
+    ssize_t bytes_read;
+    struct zts_sockaddr_storage addr;
+    zts_socklen_t addrlen = sizeof(addr);
+    Py_BEGIN_ALLOW_THREADS;
+    bytes_read = zts_bsd_recv(fd, pbuf.buf, nbytes, flags);
+    bytes_read = zts_bsd_recvfrom(
+        fd, pbuf.buf, nbytes, flags, reinterpret_cast<struct zts_sockaddr*>(&addr), &addrlen);
+    Py_END_ALLOW_THREADS;
+    PyBuffer_Release(&pbuf);
+    if (bytes_read < 0) {
+        return Py_BuildValue("ns", bytes_read, NULL);
+    }
+    return Py_BuildValue("nN", bytes_read, zts_py_sockaddr_to_tuple(reinterpret_cast<struct zts_sockaddr*>(&addr)));;
 }
 
 PyObject* zts_py_send(int fd, PyObject* buf, int flags)

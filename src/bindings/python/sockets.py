@@ -483,6 +483,8 @@ class socket:
           - ZTS_MSG_DONTWAIT - Nonblocking I/O for this operation only.
           - ZTS_MSG_MORE - Wait for more than one message.
         """
+        if n_bytes < 0:
+            raise ValueError('negative buffersize in recv')
         err, data = libzt.zts_py_recv(self._fd, n_bytes, flags)
         if err < 0:
             handle_error(err)
@@ -496,6 +498,8 @@ class socket:
         The return value is a pair (bytes, address) where bytes is a bytes object
         representing the data received and address is the address of the socket
         sending the data."""
+        if bufsize < 0:
+            raise ValueError('negative buffersize in recvfrom')
         err, data, addr = libzt.zts_py_recvfrom(self._fd, bufsize, flags)
         if err < 0:
             return handle_error(err)
@@ -509,13 +513,23 @@ class socket:
         """libzt does not support this (yet)"""
         raise NotImplementedError("libzt does not support this (yet?)")
 
-    def recvfrom_into(self, buffer, n_bytes, flags):
-        """libzt does not support this (yet)"""
-        raise NotImplementedError("libzt does not support this (yet?)")
+    def recvfrom_into(self, buffer, n_bytes=0, flags=0):
+        """Receive data from the socket, writing it into buffer instead of creating a new bytestring."""
+        if n_bytes < 0:
+            raise ValueError('negative buffersize in recv_into')
+        err, addr = libzt.zts_py_recvfrom_into(self._fd, buffer, n_bytes, flags)
+        if err < 0:
+            return handle_error(err)
+        return err, addr
 
-    def recv_into(self, buffer, n_bytes, flags):
-        """libzt does not support this (yet)"""
-        raise NotImplementedError("libzt does not support this (yet?)")
+    def recv_into(self, buffer, n_bytes=0, flags=0):
+        """Receive up to nbytes bytes from the socket, storing the data into a buffer rather than creating a new bytestring."""
+        if n_bytes < 0:
+            raise ValueError('negative buffersize in recv_into')
+        err = libzt.zts_py_recv_into(self._fd, buffer, n_bytes, flags)
+        if err < 0:
+            return handle_error(err)
+        return err
 
     def send(self, data, flags=0):
         """send(data[, flags]) -> count
