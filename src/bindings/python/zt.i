@@ -39,6 +39,22 @@
 %include "PythonSockets.h"
 
 %extend zts_net_info_t {
+    PyObject* get_all_assigned_addresses() {
+        PyObject* addrs_list = PyList_New($self->assigned_addr_count);
+        if (addrs_list == NULL) {
+            return NULL;
+        }
+        for (unsigned int i = 0; i < $self->assigned_addr_count; i++) {
+            PyObject* a = zts_py_sockaddr_to_tuple(reinterpret_cast<struct zts_sockaddr*> (&($self->assigned_addrs[i])));
+            if (a == NULL) {
+                Py_DECREF(addrs_list);
+                return NULL;
+            }
+            PyList_SET_ITEM(addrs_list, i, a);
+        }
+        return addrs_list;
+    }
+
     PyObject* get_all_routes() {
         PyObject* routes_list = PyList_New($self->route_count);
         if (routes_list == NULL) {
@@ -85,3 +101,9 @@
         return dns_list;
     }
 }
+
+%extend zts_addr_info_t {
+    PyObject* get_address() {
+        return zts_py_sockaddr_to_tuple(reinterpret_cast<struct zts_sockaddr*> (&($self->addr)));
+    }
+};
