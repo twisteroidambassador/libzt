@@ -138,11 +138,59 @@ def has_dualstack_ipv6(self):
     """Return whether libzt supports dual stack sockets: yes"""
     return True
 
-def socketpair(sock_family, sock_type, sock_proto):
-    """Intentionally not supported"""
-    raise NotImplementedError(
-        "socketpair(): libzt does not support AF_UNIX sockets"
-    )
+def socketpair(family=libzt.ZTS_AF_INET, type=libzt.ZTS_SOCK_STREAM, proto=0):
+    if family == libzt.ZTS_AF_INET:
+        host = '127.0.0.1'
+    elif family == libzt.ZTS_AF_INET6:
+        host = '::1'
+    else:
+        raise ValueError("Only AF_INET and AF_INET6 socket address families "
+                         "are supported")
+    if type != libzt.ZTS_SOCK_STREAM:
+        raise ValueError("Only SOCK_STREAM socket type is supported")
+    if proto != 0:
+        raise ValueError("Only protocol zero is supported")
+
+    # We create a connected TCP socket. Note the trick with
+    # setblocking(False) that prevents us from having to create a thread.
+    lsock = socket(family, type, proto)
+    try:
+        lsock.bind((host, 0))
+        lsock.listen()
+        # On IPv6, ignore flow_info and scope_id
+        addr, port = lsock.getsockname()[:2]
+        csock = socket(family, type, proto)
+        try:
+            csock.setblocking(False)
+            try:
+                csock.connect((addr, port))
+            except (BlockingIOError, InterruptedError):
+                pass
+            csock.setblocking(True)
+            ssock, _ = lsock.accept()
+        except:
+            csock.close()
+            raise
+    finally:
+        lsock.close()
+
+    # Authenticating avoids using a connection from something else
+    # able to connect to {host}:{port} instead of us.
+    # We expect only AF_INET and AF_INET6 families.
+    try:
+        if (
+                ssock.getsockname() != csock.getpeername()
+                or csock.getsockname() != ssock.getpeername()
+        ):
+            raise ConnectionError("Unexpected peer connection")
+    except:
+        # getsockname() and getpeername() can fail
+        # if either socket isn't connected.
+        ssock.close()
+        csock.close()
+        raise
+
+    return (ssock, csock)
 
 def create_connection(remote_address):
     """Convenience function to create a connection to a remote host"""
