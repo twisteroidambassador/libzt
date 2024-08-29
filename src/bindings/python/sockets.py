@@ -95,25 +95,29 @@ class zts_errno(IntEnum):
     ZTS_EINPROGRESS = libzt.ZTS_EINPROGRESS
 
 
+def raise_oserror_by_errno(sock_err):
+    if sock_err == zts_errno.ZTS_EAGAIN:
+        raise BlockingIOError()
+    if sock_err == zts_errno.ZTS_EINPROGRESS:
+        raise BlockingIOError()
+    if sock_err == zts_errno.ZTS_EALREADY:
+        raise BlockingIOError()
+    if sock_err == zts_errno.ZTS_ECONNABORTED:
+        raise ConnectionAbortedError()
+    if sock_err == zts_errno.ZTS_ECONNREFUSED:
+        raise ConnectionRefusedError()
+    if sock_err == zts_errno.ZTS_ECONNRESET:
+        raise ConnectionResetError()
+    if sock_err == zts_errno.ZTS_ETIMEDOUT:
+        raise TimeoutError()
+    raise ConnectionError(zts_errno(sock_err).name + " (" + str(sock_err) + ")")
+
+
 def handle_error(err):
     """Convert libzt error code to exception"""
     if err == libzt.ZTS_ERR_SOCKET:
         sock_err = errno()
-        if sock_err == zts_errno.ZTS_EAGAIN:
-            raise BlockingIOError()
-        if sock_err == zts_errno.ZTS_EINPROGRESS:
-            raise BlockingIOError()
-        if sock_err == zts_errno.ZTS_EALREADY:
-            raise BlockingIOError()
-        if sock_err == zts_errno.ZTS_ECONNABORTED:
-            raise ConnectionAbortedError()
-        if sock_err == zts_errno.ZTS_ECONNREFUSED:
-            raise ConnectionRefusedError()
-        if sock_err == zts_errno.ZTS_ECONNRESET:
-            raise ConnectionResetError()
-        if sock_err == zts_errno.ZTS_ETIMEDOUT:
-            raise TimeoutError()
-        raise ConnectionError(zts_errno(sock_err).name + " (" + str(sock_err) + ")")
+        raise_oserror_by_errno(sock_err)
     if err == libzt.ZTS_ERR_SERVICE:
         raise RuntimeError("ZTS_ERR_SERVICE (" + str(err) + ")")
     if err == libzt.ZTS_ERR_ARG:
