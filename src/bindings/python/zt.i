@@ -60,7 +60,7 @@
     }
 
     PyObject* get_all_dns_addresses() {
-        PyObject* dns_list = PyList_New(ZTS_MAX_DNS_SERVERS);
+        PyObject* dns_list = PyList_New(0);
         if (dns_list == NULL) {
             return NULL;
         }
@@ -70,7 +70,17 @@
                 Py_DECREF(dns_list);
                 return NULL;
             }
-            PyList_SET_ITEM(dns_list, i, a);
+            else if (a == Py_None) {
+                Py_DECREF(a);
+            }
+            else {
+                int ret = PyList_Append(dns_list, a);
+                Py_DECREF(a);
+                if (ret != 0) {
+                    Py_DECREF(dns_list);
+                    return NULL;
+                }
+            }
         }
         return dns_list;
     }
