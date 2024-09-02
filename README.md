@@ -1,3 +1,54 @@
+# libzt fork for Python
+
+This is my personal fork of `libzt`,
+which focuses pretty much exclusively on the Python bindings.
+Other bindings may not build or work correctly.
+
+This is developed and tested on Python 3.11 on Linux.
+Other Python versions / OSes are not guaranteed to work.
+
+## Notable changes from upstream
+
+- Fixed the build process
+- Implemented many methods on the socket object (IPv6, `sendto`/`recvfrom`, etc.) and the select call
+- Made the event callback return everything, and made it possible to read the included information from Python
+- Added DNS push information to the callback
+- Enabled loopback on included lwIP
+- Many more small fixes
+
+## How to build
+
+- Install `cmake` and `swig`.
+- Prepare a Python virtualenv and install `poetry` in it.
+- Navigate to `pkg/pypi`.
+- If not from a freshly cloned repository, run `clean.sh` to delete any prior artifacts.
+- Run `poetry build`.
+
+You should have a `.whl` file inside `pkg/pypi/dist`.
+(Ignore the `.tar.gz` file in the same directory. It is empty.)
+
+# Remarks
+
+I started [just wanting to use the Python bindings on newer Python versions.](https://twisteroidambassador.github.io/2024/08/15/build-libzt-python-bindings.html).
+As I dug into it, I found out that using `libzt` is somewhat tricky.
+
+`libzt` uses `lwIP` for its userspace networking, and `lwIP` is not thread safe.
+Technically, you're not supposed to receive on one thread and send on another with the same socket!
+This makes duplex traffic difficult to implement unless you use `select`.
+
+Many other things in `libzt` are not thread safe either, like the implementation of `zts_errno`.
+Fortunately it seems possible to just use the native `errno`, since functions just sets both.
+
+
+## License
+
+My modifications found in this repository are released under The GNU General Public License v3.0.
+
+
+Original README contents follows.
+
+---
+
 <div align="center">
 
 <h1>ZeroTier Sockets</h1>
