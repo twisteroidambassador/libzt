@@ -35,6 +35,8 @@
 %ignore zts_nfds_t;
 %ignore zts_msghdr;
 
+%apply (char *STRING, int LENGTH) { (const char* prefix, unsigned int len)}
+
 %include "ZeroTierSockets.h"
 %include "PythonSockets.h"
 

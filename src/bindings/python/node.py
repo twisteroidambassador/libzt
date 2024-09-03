@@ -60,6 +60,18 @@ class ZtsNetworkType(IntEnum):
     PUBLIC = libzt.ZTS_NETWORK_TYPE_PUBLIC
 
 
+def handle_error(err):
+    """Convert libzt error code to exception"""
+    if err == libzt.ZTS_ERR_SOCKET:
+        raise OSError(f'ZTS_ERR_SOCKET ({err})')
+    if err == libzt.ZTS_ERR_SERVICE:
+        raise RuntimeError(f'ZTS_ERR_SERVICE ({err})')
+    if err == libzt.ZTS_ERR_ARG:
+        raise TypeError(f'ZTS_ERR_ARG ({err})')
+    if err == libzt.ZTS_ERR_GENERAL:
+        raise Exception(f'ZTS_ERR_GENERAL ({err})')
+
+
 class _EventCallbackClass(libzt.PythonDirectorCallbackClass):
     """ZeroTier event callback class"""
 
@@ -84,7 +96,7 @@ class ZeroTierNode:
 
     def init_from_storage(self, storage_path):
         """Initialize the node from storage (or tell it to write to that location)"""
-        return libzt.zts_init_from_storage(storage_path)
+        return handle_error(libzt.zts_init_from_storage(storage_path))
 
     """Set the node's event handler"""
 
@@ -94,27 +106,32 @@ class ZeroTierNode:
 
     def init_set_port(self, port):
         """Set the node's primary port"""
-        return libzt.zts_init_set_port(port)
+        return handle_error(libzt.zts_init_set_port(port))
+
+    def init_blacklist_interface_prefix(self, prefix: str):
+        """Blacklist an interface prefix (or name).
+        This prevents ZeroTier from sending traffic over matching interfaces."""
+        return handle_error(libzt.zts_init_blacklist_if(prefix))
 
     def node_start(self):
         """Start the ZeroTier service"""
-        return libzt.zts_node_start()
+        return handle_error(libzt.zts_node_start())
 
     def node_stop(self):
         """Stop the ZeroTier service"""
-        return libzt.zts_node_stop()
+        return handle_error(libzt.zts_node_stop())
 
     def node_free(self):
         """Permanently shut down the network stack"""
-        return libzt.zts_node_free()
+        return handle_error(libzt.zts_node_free())
 
     def net_join(self, net_id):
         """Join a ZeroTier network"""
-        return libzt.zts_net_join(net_id)
+        return handle_error(libzt.zts_net_join(net_id))
 
     def net_leave(self, net_id):
         """Leave a ZeroTier network"""
-        return libzt.zts_net_leave(net_id)
+        return handle_error(libzt.zts_net_leave(net_id))
 
     def node_is_online(self):
         return libzt.zts_node_is_online()
