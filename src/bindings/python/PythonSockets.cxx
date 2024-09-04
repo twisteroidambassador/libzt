@@ -974,4 +974,28 @@ PyObject* zts_py_getsockname(int fd) {
     return Py_BuildValue("iN", err, zts_py_sockaddr_to_tuple(reinterpret_cast<struct zts_sockaddr*>(&sa)));
 }
 
+PyObject* zts_py_inet_pton(int family, const char* src_string) {
+    PyObject* packed;
+    if (family == ZTS_AF_INET) {
+        packed = PyBytes_FromStringAndSize(NULL, sizeof(ip4_addr_t));
+    }
+    else if (family == ZTS_AF_INET6) {
+        packed = PyBytes_FromStringAndSize(NULL, sizeof(ip6_addr_t::addr));
+    }
+    else {
+        PyErr_SetString(PyExc_OSError, "unknown address family");
+        return NULL;
+    }
+
+    if (packed == NULL) {
+        return NULL;
+    }
+    if (zts_inet_pton(family, src_string, PyBytes_AsString(packed)) != 1) {
+        Py_DECREF(packed);
+        PyErr_SetString(PyExc_ValueError, "Invalid IP address");
+        return NULL;
+    }
+    return packed;
+}
+
 #endif   // ZTS_ENABLE_PYTHON

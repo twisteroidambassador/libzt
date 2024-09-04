@@ -61,6 +61,8 @@ PyObject* zts_py_getpeername(int fd);
 
 PyObject* zts_py_getsockname(int fd);
 
+PyObject* zts_py_inet_pton(int family, const char* src_string);
+
 #endif   // ZTS_ENABLE_PYTHON
 
 #endif   // ZTS_PYTHON_SOCKETS_H

@@ -282,8 +282,8 @@ def inet_ntoa(packed_ip):
     raise NotImplementedError("libzt does not support this (yet?)")
 
 def inet_pton(address_family, ip_string):
-    """libzt does not support this (yet)"""
-    raise NotImplementedError("libzt does not support this (yet?)")
+    """Convert an IP address from its family-specific string format to a packed, binary format."""
+    return libzt.zts_py_inet_pton(address_family, ip_string)
 
 def inet_ntop(address_family, packed_ip):
     """libzt does not support this (yet)"""
