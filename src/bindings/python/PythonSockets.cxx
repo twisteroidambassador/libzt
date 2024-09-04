@@ -49,7 +49,7 @@ PyObject* set_error(void)
 
 static int zts_py_tuple_to_sockaddr(int family, PyObject* addr_obj, struct zts_sockaddr* dst_addr, zts_socklen_t* addrlen)
 {
-    if (family == AF_INET) {
+    if (family == ZTS_AF_INET) {
         struct zts_sockaddr_in* addr;
         if (*addrlen < sizeof(*addr)) {
             return ZTS_ERR_ARG;
@@ -77,7 +77,7 @@ static int zts_py_tuple_to_sockaddr(int family, PyObject* addr_obj, struct zts_s
         *addrlen = sizeof(*addr);
         return ZTS_ERR_OK;
     }
-    if (family == AF_INET6) {
+    if (family == ZTS_AF_INET6) {
         struct zts_sockaddr_in6* addr;
         if (*addrlen < sizeof(*addr)) {
             return ZTS_ERR_ARG;
