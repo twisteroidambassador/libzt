@@ -44,6 +44,8 @@
 
 PyObject* set_error(void)
 {
+    // Assumes ZTS errno are equal to OS errno
+    PyErr_SetFromErrno(PyExc_OSError);
     return NULL;   // PyErr_SetFromErrno(zts_errno);
 }
 
