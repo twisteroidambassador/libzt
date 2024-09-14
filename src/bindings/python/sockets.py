@@ -96,21 +96,7 @@ class zts_errno(IntEnum):
 
 
 def raise_oserror_by_errno(sock_err):
-    if sock_err == zts_errno.ZTS_EAGAIN:
-        raise BlockingIOError()
-    if sock_err == zts_errno.ZTS_EINPROGRESS:
-        raise BlockingIOError()
-    if sock_err == zts_errno.ZTS_EALREADY:
-        raise BlockingIOError()
-    if sock_err == zts_errno.ZTS_ECONNABORTED:
-        raise ConnectionAbortedError()
-    if sock_err == zts_errno.ZTS_ECONNREFUSED:
-        raise ConnectionRefusedError()
-    if sock_err == zts_errno.ZTS_ECONNRESET:
-        raise ConnectionResetError()
-    if sock_err == zts_errno.ZTS_ETIMEDOUT:
-        raise TimeoutError()
-    raise ConnectionError(zts_errno(sock_err).name + " (" + str(sock_err) + ")")
+    raise OSError(sock_err, zts_errno(sock_err).name + " (" + str(sock_err) + ")")
 
 
 def handle_error(err):
@@ -360,9 +346,6 @@ class socket:
         client address info.  This address info may be a tuple of host address
         and port."""
         new_conn_fd, addr = libzt.zts_py_accept(self._fd)
-        if new_conn_fd < 0:
-            handle_error(new_conn_fd)
-            return None
         return socket(self._family, self._type, self._proto, new_conn_fd), addr
 
     def bind(self, local_address):
