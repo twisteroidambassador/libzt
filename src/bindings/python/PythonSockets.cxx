@@ -141,11 +141,14 @@ PyObject* zts_py_accept(int fd)
 {
     struct zts_sockaddr_storage addrbuf = { 0 };
     socklen_t addrlen = sizeof(addrbuf);
-    int err = ZTS_ERR_OK;
+    int err;
     Py_BEGIN_ALLOW_THREADS;
     err = zts_bsd_accept(fd, (struct zts_sockaddr*)&addrbuf, &addrlen);
     Py_END_ALLOW_THREADS;
-    PyObject* t = Py_BuildValue("(lN)", err, zts_py_sockaddr_to_tuple((struct zts_sockaddr*)&addrbuf));
+    if (err < 0) {
+        return set_error();
+    }
+    PyObject* t = Py_BuildValue("(iN)", err, zts_py_sockaddr_to_tuple((struct zts_sockaddr*)&addrbuf));
     return t;
 }
 
