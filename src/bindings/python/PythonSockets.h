@@ -63,6 +63,10 @@ PyObject* zts_py_getsockname(int fd);
 
 PyObject* zts_py_inet_pton(int family, const char* src_string);
 
+PyObject* zts_py_ioctl(int fd, unsigned int code, PyObject* ob_arg, int mutate_arg);
+
+PyObject* zts_py_fcntl(int fd, int code, PyObject* arg);
+
 #endif   // ZTS_ENABLE_PYTHON
 
 #endif   // ZTS_PYTHON_SOCKETS_H
