@@ -888,13 +888,13 @@ int zts_set_blocking(int fd, int enabled)
     if (enabled != 0 && enabled != 1) {
         return ZTS_ERR_ARG;
     }
-    int flags = zts_bsd_fcntl(fd, ZTS_F_GETFL, 0);
+    int flags = zts_bsd_fcntl(fd, F_GETFL, 0);
     if (! enabled) {
-        return zts_bsd_fcntl(fd, ZTS_F_SETFL, flags | ZTS_O_NONBLOCK);
+        return zts_bsd_fcntl(fd, F_SETFL, flags | O_NONBLOCK);
     }
     else {
         // Default
-        return zts_bsd_fcntl(fd, ZTS_F_SETFL, flags & (~ZTS_O_NONBLOCK));
+        return zts_bsd_fcntl(fd, F_SETFL, flags & (~O_NONBLOCK));
     }
 }
 
@@ -903,11 +903,11 @@ int zts_get_blocking(int fd)
     if (! transport_ok()) {
         return ZTS_ERR_SERVICE;
     }
-    int flags = zts_bsd_fcntl(fd, ZTS_F_GETFL, 0);
+    int flags = zts_bsd_fcntl(fd, F_GETFL, 0);
     if (flags < 0) {
         return flags;
     }
-    return ! (flags & ZTS_O_NONBLOCK);
+    return ! (flags & O_NONBLOCK);
 }
 
 int zts_set_keepalive(int fd, int enabled)
