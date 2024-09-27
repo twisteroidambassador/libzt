@@ -4,39 +4,29 @@ on: [workflow_dispatch]
 
 jobs:
   build_wheels:
-    name: Build wheels on ${{ matrix.os }}
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        os: [ubuntu-latest, macos-latest]
+    name: Build wheels
+    runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
         with:
           submodules: recursive
 
-      - name: Install Swig (macos-latest)
-        if: matrix.os == 'macos-latest'
-        run: brew install swig
+      - name: Install Dependencies from repository
+        run: sudo apt-get install swig cmake
 
-      - name: Install Swig (ubuntu-latest)
-        if: matrix.os == 'ubuntu-latest'
-        run: sudo apt-get install swig
-
-      - uses: actions/setup-python@v2
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'poetry'
       
       - name: Install poetry
-        run: python -m pip install poetry==1.1.12
-
-      - name: Install cibuildwheel
-        run: python -m pip install cibuildwheel==2.5.0
+        run: python -m pip install poetry
 
       - name: Build wheels
-        env:
-          CIBW_ARCHS: auto
-          CIBW_BUILD: cp36-* cp37-* cp38-* cp39-* cp310-*
-        run: python -m cibuildwheel pkg/pypi --output-dir wheelhouse
+        run: python -m poetry build -C pkg/pypi
 
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v4
         with:
-          path: wheelhouse/*.whl
+          path: pkg/pypi/dist/*.whl
+          if-no-files-found: error
