@@ -16,6 +16,11 @@ Other Python versions / OSes are not guaranteed to work.
 - Enabled loopback on included lwIP
 - Many more small fixes
 
+## Download prebuilt wheels
+
+Check the [Releases](https://github.com/twisteroidambassador/libzt/releases) section.
+Sometimes, the [Actions](https://github.com/twisteroidambassador/libzt/actions) section may have newer builds.
+
 ## How to build
 
 - Install `cmake` and `swig`.
