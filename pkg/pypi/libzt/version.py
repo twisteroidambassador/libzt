@@ -1,2 +1,2 @@
-import pkg_resources
-__version__ = pkg_resources.get_distribution("libzt").version
+from importlib.metadata import distribution
+__version__ = distribution("libzt").version
